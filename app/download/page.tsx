@@ -22,23 +22,54 @@ import Footer from '@/components/Footer';
 export default function DownloadPage() {
   const [downloadLink, setDownloadLink] = useState('#');
   const [customQr, setCustomQr] = useState('');
+  const [apkVersion, setApkVersion] = useState('v1.0.0');
+  const [apkSize, setApkSize] = useState('25.4 MB');
+  const [releaseNotes, setReleaseNotes] = useState('Initial launch with aggregated 50+ movie servers, anime hub, and micro vertical short dramas.');
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const savedLink = localStorage.getItem('vegaApkLink');
-      const savedQr = localStorage.getItem('vegaCustomQr');
-      setTimeout(() => {
-        if (savedLink) {
-          setDownloadLink(savedLink);
-        } else {
-          setDownloadLink('#download-apk');
+    // Fetch global config from server API
+    fetch('/api/config')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data) {
+          setDownloadLink(data.apkLink || '#');
+          setApkVersion(data.apkVersion || 'v1.0.0');
+          setApkSize(data.apkSize || '25.4 MB');
+          setReleaseNotes(data.releaseNotes || 'Initial launch with aggregated 50+ movie servers, anime hub, and micro vertical short dramas.');
+          setCustomQr(data.customQr || '');
         }
-        if (savedQr) {
-          setCustomQr(savedQr);
+      })
+      .catch((err) => {
+        console.error('Failed to load server config, falling back to local storage', err);
+        if (typeof window !== 'undefined') {
+          const savedLink = localStorage.getItem('vegaApkLink');
+          const savedQr = localStorage.getItem('vegaCustomQr');
+          const savedVersion = localStorage.getItem('vegaApkVersion');
+          const savedSize = localStorage.getItem('vegaApkSize');
+          const savedNotes = localStorage.getItem('vegaReleaseNotes');
+
+          setTimeout(() => {
+            if (savedLink) {
+              setDownloadLink(savedLink);
+            } else {
+              setDownloadLink('#download-apk');
+            }
+            if (savedQr) {
+              setCustomQr(savedQr);
+            }
+            if (savedVersion) {
+              setApkVersion(savedVersion);
+            }
+            if (savedSize) {
+              setApkSize(savedSize);
+            }
+            if (savedNotes) {
+              setReleaseNotes(savedNotes);
+            }
+          }, 0);
         }
-      }, 0);
-    }
+      });
   }, []);
 
   const handleShare = () => {
@@ -138,11 +169,11 @@ export default function DownloadPage() {
                 <div className="flex gap-4 text-xs font-semibold text-zinc-400">
                   <div className="flex flex-col">
                     <span className="text-zinc-600 font-bold font-mono text-[9px] uppercase tracking-wider">Version</span>
-                    <span className="text-white mt-0.5 font-bold">v1.0.0</span>
+                    <span className="text-white mt-0.5 font-bold">{apkVersion}</span>
                   </div>
                   <div className="flex flex-col border-l border-white/[0.05] pl-4">
                     <span className="text-zinc-600 font-bold font-mono text-[9px] uppercase tracking-wider">File Size</span>
-                    <span className="text-white mt-0.5 font-bold">25.4 MB</span>
+                    <span className="text-white mt-0.5 font-bold">{apkSize}</span>
                   </div>
                 </div>
               </div>
@@ -156,11 +187,11 @@ export default function DownloadPage() {
                 >
                   <a
                     href={downloadLink}
-                    download="Vega_v1.0.0.apk"
+                    download={`Vega_${apkVersion}.apk`}
                     className="flex items-center justify-center gap-3 px-8 py-5 bg-[#030303] hover:bg-transparent rounded-xl text-lg font-black text-white transition-all cursor-pointer"
                   >
                     <Download size={22} className="text-purple-300 animate-bounce" />
-                    <span>Download APK v1.0.0 (25 MB)</span>
+                    <span>Download APK {apkVersion} ({apkSize})</span>
                   </a>
                 </motion.div>
 
@@ -178,6 +209,23 @@ export default function DownloadPage() {
               </div>
 
             </motion.div>
+
+            {/* What's New / Release Notes */}
+            {releaseNotes && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.1 }}
+                className="glass-panel rounded-2xl p-6 bg-zinc-950/40 border border-white/6"
+              >
+                <h4 className="font-display font-extrabold text-base text-white mb-3 flex items-center gap-2">
+                  <Info size={18} className="text-purple-400" /> What&apos;s New in {apkVersion}
+                </h4>
+                <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed font-sans bg-white/[0.01] border border-white/[0.03] p-4 rounded-xl">
+                  {releaseNotes}
+                </p>
+              </motion.div>
+            )}
 
             {/* Warning Alarm Banner */}
             <motion.div

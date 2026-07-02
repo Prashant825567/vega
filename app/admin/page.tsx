@@ -28,6 +28,7 @@ export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [error, setError] = useState('');
   const [shake, setShake] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   // APK values
   const [apkLink, setApkLink] = useState('#');
@@ -45,28 +46,49 @@ export default function AdminPage() {
     const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' };
     const formattedDate = new Date().toLocaleDateString('en-US', options);
 
+    // Wrap in setTimeout to defer state updates to prevent synchronous setState during render
+    setTimeout(() => {
+      setTodayDate(formattedDate);
+    }, 0);
+
     // Client checks
     if (typeof window !== 'undefined') {
       const authStatus = sessionStorage.getItem('vegaAdminAuthenticated');
-      const savedLink = localStorage.getItem('vegaApkLink') || '#';
-      const savedVersion = localStorage.getItem('vegaApkVersion') || 'v1.0.0';
-      const savedSize = localStorage.getItem('vegaApkSize') || '25.4 MB';
-      const savedNotes = localStorage.getItem('vegaReleaseNotes') || 'Initial launch with aggregated 50+ movie servers, anime hub, and micro vertical short dramas.';
-      const savedQr = localStorage.getItem('vegaCustomQr') || '';
-
-      // Wrap in setTimeout to defer state updates to prevent synchronous setState during render
-      setTimeout(() => {
-        setTodayDate(formattedDate);
-        if (authStatus === 'true') {
+      if (authStatus === 'true') {
+        setTimeout(() => {
           setIsAuthenticated(true);
-        }
-        setApkLink(savedLink);
-        setApkVersion(savedVersion);
-        setApkSize(savedSize);
-        setReleaseNotes(savedNotes);
-        setCustomQr(savedQr);
-      }, 0);
+        }, 0);
+      }
     }
+
+    // Fetch config from server API
+    fetch('/api/config')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data) {
+          setApkLink(data.apkLink || '#');
+          setApkVersion(data.apkVersion || 'v1.0.0');
+          setApkSize(data.apkSize || '25.4 MB');
+          setReleaseNotes(data.releaseNotes || '');
+          setCustomQr(data.customQr || '');
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to load server config, falling back to local storage', err);
+        if (typeof window !== 'undefined') {
+          const savedLink = localStorage.getItem('vegaApkLink') || '#';
+          const savedVersion = localStorage.getItem('vegaApkVersion') || 'v1.0.0';
+          const savedSize = localStorage.getItem('vegaApkSize') || '25.4 MB';
+          const savedNotes = localStorage.getItem('vegaReleaseNotes') || 'Initial launch with aggregated 50+ movie servers, anime hub, and micro vertical short dramas.';
+          const savedQr = localStorage.getItem('vegaCustomQr') || '';
+
+          setApkLink(savedLink);
+          setApkVersion(savedVersion);
+          setApkSize(savedSize);
+          setReleaseNotes(savedNotes);
+          setCustomQr(savedQr);
+        }
+      });
   }, []);
 
   const handleLogin = (e: React.FormEvent) => {
@@ -105,15 +127,41 @@ export default function AdminPage() {
     setCustomQr('');
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('vegaApkLink', apkLink);
-      localStorage.setItem('vegaApkVersion', apkVersion);
-      localStorage.setItem('vegaApkSize', apkSize);
-      localStorage.setItem('vegaReleaseNotes', releaseNotes);
-      localStorage.setItem('vegaCustomQr', customQr);
-      alert('Changes saved successfully! Download page updated.');
+    setIsSaving(true);
+    try {
+      const res = await fetch('/api/config', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          apkLink,
+          apkVersion,
+          apkSize,
+          releaseNotes,
+          customQr,
+        }),
+      });
+      const result = await res.json();
+      if (result.success) {
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('vegaApkLink', apkLink);
+          localStorage.setItem('vegaApkVersion', apkVersion);
+          localStorage.setItem('vegaApkSize', apkSize);
+          localStorage.setItem('vegaReleaseNotes', releaseNotes);
+          localStorage.setItem('vegaCustomQr', customQr);
+        }
+        alert('Changes saved successfully! All users will see the updated download link and QR code immediately.');
+      } else {
+        alert('Failed to save config: ' + (result.error || 'Unknown error'));
+      }
+    } catch (err: any) {
+      console.error(err);
+      alert('Error saving config: ' + (err?.message || 'Unknown error'));
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -370,18 +418,23 @@ export default function AdminPage() {
 
                   {/* Save changes Trigger */}
                   <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-white/[0.04]">
-                    <span className="text-xs text-zinc-500 font-semibold">
-                      Requires client local cache refresh
+                    <span className="text-xs text-purple-400 font-semibold font-mono">
+                      ● Saves globally to the web server
                     </span>
                     
                     <motion.button
-                      whileHover={{ scale: 1.05, boxShadow: "0 0 25px rgba(124,58,237,0.4)" }}
-                      whileTap={{ scale: 0.96 }}
+                      whileHover={isSaving ? {} : { scale: 1.05, boxShadow: "0 0 25px rgba(124,58,237,0.4)" }}
+                      whileTap={isSaving ? {} : { scale: 0.96 }}
                       type="submit"
-                      className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-sm font-bold text-white flex items-center justify-center gap-2 cursor-pointer shadow-lg"
+                      disabled={isSaving}
+                      className={`w-full sm:w-auto px-6 py-3.5 rounded-xl text-sm font-bold text-white flex items-center justify-center gap-2 shadow-lg transition-all ${
+                        isSaving 
+                          ? 'bg-zinc-800 border border-white/10 text-zinc-500 cursor-not-allowed' 
+                          : 'bg-gradient-to-r from-purple-600 to-pink-600 cursor-pointer'
+                      }`}
                     >
-                      <Save size={16} />
-                      <span>Save Changes</span>
+                      <Save size={16} className={isSaving ? 'animate-spin' : ''} />
+                      <span>{isSaving ? 'Saving Changes...' : 'Save Changes'}</span>
                     </motion.button>
                   </div>
 
