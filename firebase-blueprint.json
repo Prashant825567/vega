@@ -1,0 +1,38 @@
+{
+  "entities": {
+    "VegaConfig": {
+      "title": "VegaConfig",
+      "description": "Global configuration settings for Vega APK download and QR code",
+      "type": "object",
+      "properties": {
+        "apkLink": {
+          "type": "string",
+          "description": "Direct download link for the Vega APK"
+        },
+        "apkVersion": {
+          "type": "string",
+          "description": "Current version of the Vega APK"
+        },
+        "apkSize": {
+          "type": "string",
+          "description": "Size of the Vega APK file"
+        },
+        "releaseNotes": {
+          "type": "string",
+          "description": "Release notes / What's New text for the current version"
+        },
+        "customQr": {
+          "type": "string",
+          "description": "Base64 encoded custom QR code image or QR code image URL"
+        }
+      },
+      "required": ["apkLink", "apkVersion", "apkSize", "releaseNotes", "customQr"]
+    }
+  },
+  "firestore": {
+    "settings": {
+      "schema": "#/entities/VegaConfig",
+      "description": "Global settings document"
+    }
+  }
+}

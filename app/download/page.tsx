@@ -25,6 +25,8 @@ export default function DownloadPage() {
   const [apkVersion, setApkVersion] = useState('v1.0.0');
   const [apkSize, setApkSize] = useState('25.4 MB');
   const [releaseNotes, setReleaseNotes] = useState('Initial launch with aggregated 50+ movie servers, anime hub, and micro vertical short dramas.');
+  const [qrType, setQrType] = useState('auto'); // 'auto' | 'url' | 'upload'
+  const [qrUrl, setQrUrl] = useState('');
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
@@ -38,6 +40,8 @@ export default function DownloadPage() {
           setApkSize(data.apkSize || '25.4 MB');
           setReleaseNotes(data.releaseNotes || 'Initial launch with aggregated 50+ movie servers, anime hub, and micro vertical short dramas.');
           setCustomQr(data.customQr || '');
+          setQrType(data.qrType || 'auto');
+          setQrUrl(data.qrUrl || '');
         }
       })
       .catch((err) => {
@@ -48,6 +52,8 @@ export default function DownloadPage() {
           const savedVersion = localStorage.getItem('vegaApkVersion');
           const savedSize = localStorage.getItem('vegaApkSize');
           const savedNotes = localStorage.getItem('vegaReleaseNotes');
+          const savedQrType = localStorage.getItem('vegaQrType');
+          const savedQrUrl = localStorage.getItem('vegaQrUrl');
 
           setTimeout(() => {
             if (savedLink) {
@@ -66,6 +72,12 @@ export default function DownloadPage() {
             }
             if (savedNotes) {
               setReleaseNotes(savedNotes);
+            }
+            if (savedQrType) {
+              setQrType(savedQrType);
+            }
+            if (savedQrUrl) {
+              setQrUrl(savedQrUrl);
             }
           }, 0);
         }
@@ -295,7 +307,41 @@ export default function DownloadPage() {
               <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-pink-500/30 to-transparent" />
               
               {/* Visual QR Code Box */}
-              {customQr ? (
+              {qrType === 'auto' ? (
+                downloadLink && downloadLink !== '#' ? (
+                  <div className="relative p-2.5 rounded-2xl bg-white border-2 border-purple-500/50 shadow-2xl shadow-purple-900/10 mb-4 w-44 h-44 flex items-center justify-center overflow-hidden">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img 
+                      src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(downloadLink)}`} 
+                      alt="Vega Download QR" 
+                      className="w-full h-full object-contain rounded-lg"
+                    />
+                  </div>
+                ) : (
+                  <div className="relative p-4 rounded-2xl bg-white border-2 border-purple-500/50 shadow-2xl shadow-purple-900/10 mb-4 w-44 aspect-square flex flex-col items-center justify-center text-zinc-500 text-[10px] font-bold">
+                    No download link
+                  </div>
+                )
+              ) : qrType === 'url' ? (
+                qrUrl ? (
+                  <div className="relative p-2.5 rounded-2xl bg-white border-2 border-purple-500/50 shadow-2xl shadow-purple-900/10 mb-4 w-44 h-44 flex items-center justify-center overflow-hidden">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img 
+                      src={qrUrl} 
+                      alt="Vega Download QR" 
+                      className="w-full h-full object-contain rounded-lg"
+                      onError={(e) => {
+                        // Fallback in case of invalid direct URL
+                        (e.target as HTMLImageElement).src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(downloadLink)}`;
+                      }}
+                    />
+                  </div>
+                ) : (
+                  <div className="relative p-4 rounded-2xl bg-white border-2 border-purple-500/50 shadow-2xl shadow-purple-900/10 mb-4 w-44 aspect-square flex flex-col items-center justify-center text-zinc-500 text-[10px] font-bold">
+                    No QR URL set
+                  </div>
+                )
+              ) : customQr ? (
                 <div className="relative p-2.5 rounded-2xl bg-white border-2 border-purple-500/50 shadow-2xl shadow-purple-900/10 mb-4 w-44 h-44 flex items-center justify-center overflow-hidden">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img 

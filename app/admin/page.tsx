@@ -36,6 +36,8 @@ export default function AdminPage() {
   const [apkSize, setApkSize] = useState('25.4 MB');
   const [releaseNotes, setReleaseNotes] = useState('');
   const [customQr, setCustomQr] = useState('');
+  const [qrType, setQrType] = useState('auto'); // 'auto' | 'url' | 'upload'
+  const [qrUrl, setQrUrl] = useState('');
   
   // Date and stats
   const [todayDate, setTodayDate] = useState('July 2, 2026');
@@ -71,6 +73,8 @@ export default function AdminPage() {
           setApkSize(data.apkSize || '25.4 MB');
           setReleaseNotes(data.releaseNotes || '');
           setCustomQr(data.customQr || '');
+          setQrType(data.qrType || 'auto');
+          setQrUrl(data.qrUrl || '');
         }
       })
       .catch((err) => {
@@ -81,12 +85,16 @@ export default function AdminPage() {
           const savedSize = localStorage.getItem('vegaApkSize') || '25.4 MB';
           const savedNotes = localStorage.getItem('vegaReleaseNotes') || 'Initial launch with aggregated 50+ movie servers, anime hub, and micro vertical short dramas.';
           const savedQr = localStorage.getItem('vegaCustomQr') || '';
+          const savedQrType = localStorage.getItem('vegaQrType') || 'auto';
+          const savedQrUrl = localStorage.getItem('vegaQrUrl') || '';
 
           setApkLink(savedLink);
           setApkVersion(savedVersion);
           setApkSize(savedSize);
           setReleaseNotes(savedNotes);
           setCustomQr(savedQr);
+          setQrType(savedQrType);
+          setQrUrl(savedQrUrl);
         }
       });
   }, []);
@@ -142,6 +150,8 @@ export default function AdminPage() {
           apkSize,
           releaseNotes,
           customQr,
+          qrType,
+          qrUrl,
         }),
       });
       const result = await res.json();
@@ -152,6 +162,8 @@ export default function AdminPage() {
           localStorage.setItem('vegaApkSize', apkSize);
           localStorage.setItem('vegaReleaseNotes', releaseNotes);
           localStorage.setItem('vegaCustomQr', customQr);
+          localStorage.setItem('vegaQrType', qrType);
+          localStorage.setItem('vegaQrUrl', qrUrl);
         }
         alert('Changes saved successfully! All users will see the updated download link and QR code immediately.');
       } else {
@@ -305,23 +317,92 @@ export default function AdminPage() {
                     </p>
                   </div>
 
-                  {/* Custom QR Code Upload */}
-                  <div className="space-y-3 bg-white/[0.02] border border-white/[0.04] p-5 rounded-2xl">
+                  {/* Custom QR Code Selection & Upload */}
+                  <div className="space-y-4 bg-white/[0.02] border border-white/[0.04] p-5 rounded-2xl">
                     <label className="text-[10px] font-bold font-mono text-zinc-500 uppercase tracking-widest px-1 flex items-center gap-1.5">
                       <QrCode size={12} className="text-purple-400" />
-                      <span>Download QR Code Image</span>
+                      <span>Download QR Code Settings</span>
                     </label>
+
+                    {/* QR Type Segmented Control */}
+                    <div className="grid grid-cols-3 gap-2 p-1 bg-zinc-950 rounded-xl border border-white/5">
+                      <button
+                        type="button"
+                        onClick={() => setQrType('auto')}
+                        className={`py-2 text-[10px] sm:text-xs font-bold rounded-lg transition-all cursor-pointer text-center ${
+                          qrType === 'auto'
+                            ? 'bg-purple-600/20 text-purple-300 border border-purple-500/30 shadow-md'
+                            : 'text-zinc-400 hover:text-white hover:bg-white/[0.02] border border-transparent'
+                        }`}
+                      >
+                        Auto-Generate
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setQrType('url')}
+                        className={`py-2 text-[10px] sm:text-xs font-bold rounded-lg transition-all cursor-pointer text-center ${
+                          qrType === 'url'
+                            ? 'bg-purple-600/20 text-purple-300 border border-purple-500/30 shadow-md'
+                            : 'text-zinc-400 hover:text-white hover:bg-white/[0.02] border border-transparent'
+                        }`}
+                      >
+                        Fetch from Link
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setQrType('upload')}
+                        className={`py-2 text-[10px] sm:text-xs font-bold rounded-lg transition-all cursor-pointer text-center ${
+                          qrType === 'upload'
+                            ? 'bg-purple-600/20 text-purple-300 border border-purple-500/30 shadow-md'
+                            : 'text-zinc-400 hover:text-white hover:bg-white/[0.02] border border-transparent'
+                        }`}
+                      >
+                        Upload Image
+                      </button>
+                    </div>
                     
                     <div className="flex flex-col sm:flex-row gap-5 items-center">
-                      {/* Current QR Code Preview */}
+                      {/* Live QR Code Preview */}
                       <div className="relative w-32 h-32 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center p-2 overflow-hidden shrink-0 group">
-                        {customQr ? (
+                        {qrType === 'auto' ? (
+                          apkLink && apkLink !== '#' ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img 
+                              src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(apkLink)}`} 
+                              alt="Auto-Generated QR" 
+                              className="w-full h-full object-contain rounded-lg bg-white p-1"
+                            />
+                          ) : (
+                            <div className="text-center p-2 text-[10px] text-zinc-500 font-medium">
+                              <QrCode size={24} className="mx-auto mb-1.5 text-zinc-600 animate-pulse" />
+                              Please enter a valid APK Link first
+                            </div>
+                          )
+                        ) : qrType === 'url' ? (
+                          qrUrl ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img 
+                              src={qrUrl} 
+                              alt="Link fetched QR" 
+                              className="w-full h-full object-contain rounded-lg bg-white p-1"
+                              onError={(e) => {
+                                // Fallback if image fails to load
+                                (e.target as HTMLImageElement).src = "https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=Invalid_QR_URL";
+                              }}
+                            />
+                          ) : (
+                            <div className="text-center p-2 text-[10px] text-zinc-500 font-medium">
+                              <QrCode size={24} className="mx-auto mb-1.5 text-zinc-600 animate-pulse" />
+                              Enter a QR Image link
+                            </div>
+                          )
+                        ) : customQr ? (
                           <>
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img 
                               src={customQr} 
-                              alt="QR Preview" 
-                              className="w-full h-full object-contain rounded-lg"
+                              alt="Uploaded QR Preview" 
+                              className="w-full h-full object-contain rounded-lg bg-white p-1"
                             />
                             <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                               <button
@@ -337,43 +418,76 @@ export default function AdminPage() {
                         ) : (
                           <div className="text-center p-2 text-[10px] text-zinc-500 font-medium">
                             <QrCode size={24} className="mx-auto mb-1.5 text-zinc-600 animate-pulse" />
-                            Default Code<br />(Stylized CSS)
+                            Please upload an image
                           </div>
                         )}
                       </div>
 
-                      {/* Upload Controls */}
+                      {/* Control Panel depending on active type */}
                       <div className="flex-1 space-y-2.5 w-full">
-                        <p className="text-[11px] text-zinc-400 leading-normal">
-                          Upload your custom app QR code. If none is uploaded, the site will automatically render a gorgeous, stylized fallback QR code.
-                        </p>
-                        
-                        <div className="flex flex-wrap gap-2">
-                          <label className="px-4 py-2 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 rounded-xl text-xs font-bold text-purple-300 transition-all duration-200 cursor-pointer flex items-center gap-1.5">
-                            <Upload size={14} />
-                            <span>Upload QR Image</span>
+                        {qrType === 'auto' && (
+                          <div className="space-y-1">
+                            <h5 className="text-[11px] font-bold text-purple-400 font-mono">⚡ Auto-Generated Smart QR</h5>
+                            <p className="text-[11px] text-zinc-400 leading-normal">
+                              The QR code is automatically generated to point directly to your <strong>APK Download Link</strong>. When you change the link, the QR code updates in real-time.
+                            </p>
+                            <p className="text-[10px] text-zinc-500 italic">
+                              Target URL: <span className="font-mono text-zinc-400 break-all">{apkLink}</span>
+                            </p>
+                          </div>
+                        )}
+
+                        {qrType === 'url' && (
+                          <div className="space-y-2">
+                            <h5 className="text-[11px] font-bold text-purple-400 font-mono">🔗 Custom Image Link</h5>
+                            <p className="text-[11px] text-zinc-400 leading-normal">
+                              Enter a direct link to any QR code image hosted online. The app will fetch and display it instantly.
+                            </p>
                             <input
-                              type="file"
-                              accept="image/*"
-                              onChange={handleQrUpload}
-                              className="hidden"
+                              type="text"
+                              placeholder="e.g. https://domain.com/my-apk-qr.png"
+                              value={qrUrl}
+                              onChange={(e) => setQrUrl(e.target.value)}
+                              className="w-full h-10 rounded-xl bg-zinc-900 border border-white/6 px-3.5 text-xs font-semibold placeholder:text-zinc-600 focus:outline-none focus:border-purple-500 transition-all font-mono"
                             />
-                          </label>
-                          
-                          {customQr && (
-                            <button
-                              type="button"
-                              onClick={handleClearQr}
-                              className="px-4 py-2 bg-zinc-900 hover:bg-zinc-800 border border-white/6 rounded-xl text-xs font-bold text-zinc-400 hover:text-white transition-all duration-200 flex items-center gap-1.5"
-                            >
-                              <Trash2 size={14} />
-                              <span>Reset to Default</span>
-                            </button>
-                          )}
-                        </div>
-                        <p className="text-[9px] text-zinc-600 font-mono">
-                          Accepts PNG, JPG, WebP. Recommended square size. Max size 2MB.
-                        </p>
+                          </div>
+                        )}
+
+                        {qrType === 'upload' && (
+                          <div className="space-y-2">
+                            <h5 className="text-[11px] font-bold text-purple-400 font-mono">📁 Direct File Upload</h5>
+                            <p className="text-[11px] text-zinc-400 leading-normal">
+                              Upload an image directly from your device. It will be compressed and synchronized across the system.
+                            </p>
+                            
+                            <div className="flex flex-wrap gap-2">
+                              <label className="px-4 py-2 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 rounded-xl text-xs font-bold text-purple-300 transition-all duration-200 cursor-pointer flex items-center gap-1.5">
+                                <Upload size={14} />
+                                <span>Upload QR Image</span>
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={handleQrUpload}
+                                  className="hidden"
+                                />
+                              </label>
+                              
+                              {customQr && (
+                                <button
+                                  type="button"
+                                  onClick={handleClearQr}
+                                  className="px-4 py-2 bg-zinc-900 hover:bg-zinc-800 border border-white/6 rounded-xl text-xs font-bold text-zinc-400 hover:text-white transition-all duration-200 flex items-center gap-1.5"
+                                >
+                                  <Trash2 size={14} />
+                                  <span>Reset Upload</span>
+                                </button>
+                              )}
+                            </div>
+                            <p className="text-[9px] text-zinc-600 font-mono">
+                              Accepts PNG, JPG, WebP. Recommended square size. Max size 2MB.
+                            </p>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
