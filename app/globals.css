@@ -1,0 +1,72 @@
+@import "tailwindcss";
+
+@theme {
+  --color-vega-bg: #030303;
+  --color-vega-card: #0D0D14;
+  --color-vega-purple: #7C3AED;
+  --color-vega-light: #A855F7;
+  --color-vega-gold: #F59E0B;
+  --color-vega-border: rgba(255, 255, 255, 0.06);
+
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-glow: glow 2s ease-in-out infinite alternate;
+  --animate-pulse-slow: pulse-slow 8s ease-in-out infinite;
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-15px); }
+  }
+  @keyframes glow {
+    from { box-shadow: 0 0 15px rgba(124, 58, 237, 0.4); }
+    to { box-shadow: 0 0 35px rgba(168, 85, 247, 0.7), 0 0 60px rgba(124, 58, 237, 0.4); }
+  }
+  @keyframes pulse-slow {
+    0%, 100% { opacity: 0.4; transform: scale(1); }
+    50% { opacity: 0.8; transform: scale(1.15); }
+  }
+}
+
+/* Custom global styles to enhance the aesthetic */
+body {
+  background-color: #030303;
+  color: #FFFFFF;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  overflow-x: hidden;
+}
+
+/* Glassmorphism utilities */
+.glass-panel {
+  background: rgba(13, 13, 20, 0.65);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.glass-panel-heavy {
+  background: rgba(10, 10, 15, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Glow orb gradients */
+.glow-orb {
+  filter: blur(120px);
+  pointer-events: none;
+}
+
+/* Customized scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #030303;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(124, 58, 237, 0.3);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(124, 58, 237, 0.6);
+}

@@ -1,0 +1,6 @@
+{
+  "name": "Vega",
+  "description": "High-fidelity landing page and download portal for the Vega free Android streaming app.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
