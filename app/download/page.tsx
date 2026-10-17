@@ -18,16 +18,19 @@ import {
 import Navbar from '@/components/Navbar';
 import ParticlesBg from '@/components/ParticlesBg';
 import Footer from '@/components/Footer';
+import DownloadTracker from '@/components/DownloadTracker';
 
 export default function DownloadPage() {
-  const [downloadLink, setDownloadLink] = useState('#');
+  const [downloadLink, setDownloadLink] = useState('');
   const [customQr, setCustomQr] = useState('');
-  const [apkVersion, setApkVersion] = useState('v1.0.0');
-  const [apkSize, setApkSize] = useState('25.4 MB');
-  const [releaseNotes, setReleaseNotes] = useState('Initial launch with aggregated 50+ movie servers, anime hub, and micro vertical short dramas.');
+  const [apkVersion, setApkVersion] = useState('');
+  const [apkSize, setApkSize] = useState('');
+  const [releaseNotes, setReleaseNotes] = useState('');
   const [qrType, setQrType] = useState('auto'); // 'auto' | 'url' | 'upload'
   const [qrUrl, setQrUrl] = useState('');
   const [copied, setCopied] = useState(false);
+  const [isLoadingConfig, setIsLoadingConfig] = useState(true);
+  const [isTrackerOpen, setIsTrackerOpen] = useState(false);
 
   useEffect(() => {
     // Fetch global config from server API
@@ -35,7 +38,7 @@ export default function DownloadPage() {
       .then((res) => res.json())
       .then((data) => {
         if (data) {
-          setDownloadLink(data.apkLink || '#');
+          setDownloadLink(data.apkLink || 'https://github.com/Vega-Portal/vega-releases/releases/download/v1.0.0/Vega_v1.0.0.apk');
           setApkVersion(data.apkVersion || 'v1.0.0');
           setApkSize(data.apkSize || '25.4 MB');
           setReleaseNotes(data.releaseNotes || 'Initial launch with aggregated 50+ movie servers, anime hub, and micro vertical short dramas.');
@@ -55,32 +58,17 @@ export default function DownloadPage() {
           const savedQrType = localStorage.getItem('vegaQrType');
           const savedQrUrl = localStorage.getItem('vegaQrUrl');
 
-          setTimeout(() => {
-            if (savedLink) {
-              setDownloadLink(savedLink);
-            } else {
-              setDownloadLink('#download-apk');
-            }
-            if (savedQr) {
-              setCustomQr(savedQr);
-            }
-            if (savedVersion) {
-              setApkVersion(savedVersion);
-            }
-            if (savedSize) {
-              setApkSize(savedSize);
-            }
-            if (savedNotes) {
-              setReleaseNotes(savedNotes);
-            }
-            if (savedQrType) {
-              setQrType(savedQrType);
-            }
-            if (savedQrUrl) {
-              setQrUrl(savedQrUrl);
-            }
-          }, 0);
+          if (savedLink) setDownloadLink(savedLink);
+          if (savedQr) setCustomQr(savedQr);
+          if (savedVersion) setApkVersion(savedVersion);
+          if (savedSize) setApkSize(savedSize);
+          if (savedNotes) setReleaseNotes(savedNotes);
+          if (savedQrType) setQrType(savedQrType);
+          if (savedQrUrl) setQrUrl(savedQrUrl);
         }
+      })
+      .finally(() => {
+        setIsLoadingConfig(false);
       });
   }, []);
 
@@ -179,13 +167,21 @@ export default function DownloadPage() {
 
                 {/* Micro metrics */}
                 <div className="flex gap-4 text-xs font-semibold text-zinc-400">
-                  <div className="flex flex-col">
+                  <div className="flex flex-col min-w-[50px]">
                     <span className="text-zinc-600 font-bold font-mono text-[9px] uppercase tracking-wider">Version</span>
-                    <span className="text-white mt-0.5 font-bold">{apkVersion}</span>
+                    {isLoadingConfig ? (
+                      <div className="w-12 h-4 rounded bg-white/10 animate-pulse mt-1" />
+                    ) : (
+                      <span className="text-white mt-0.5 font-bold">{apkVersion || 'v1.0.0'}</span>
+                    )}
                   </div>
-                  <div className="flex flex-col border-l border-white/[0.05] pl-4">
+                  <div className="flex flex-col border-l border-white/[0.05] pl-4 min-w-[60px]">
                     <span className="text-zinc-600 font-bold font-mono text-[9px] uppercase tracking-wider">File Size</span>
-                    <span className="text-white mt-0.5 font-bold">{apkSize}</span>
+                    {isLoadingConfig ? (
+                      <div className="w-14 h-4 rounded bg-white/10 animate-pulse mt-1" />
+                    ) : (
+                      <span className="text-white mt-0.5 font-bold">{apkSize || '25.4 MB'}</span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -193,18 +189,24 @@ export default function DownloadPage() {
               {/* Glowing Download Trigger */}
               <div className="space-y-4">
                 <motion.div
-                  whileHover={{ scale: 1.03, boxShadow: "0 0 35px rgba(124,58,237,0.5)" }}
+                  whileHover={{ scale: 1.02, boxShadow: "0 0 35px rgba(124,58,237,0.5)" }}
                   whileTap={{ scale: 0.98 }}
                   className="rounded-xl bg-gradient-to-r from-purple-600 via-purple-500 to-pink-600 p-[1px] shadow-2xl"
                 >
-                  <a
-                    href={downloadLink}
-                    download={`Vega_${apkVersion}.apk`}
-                    className="flex items-center justify-center gap-3 px-8 py-5 bg-[#030303] hover:bg-transparent rounded-xl text-lg font-black text-white transition-all cursor-pointer"
-                  >
-                    <Download size={22} className="text-purple-300 animate-bounce" />
-                    <span>Download APK {apkVersion} ({apkSize})</span>
-                  </a>
+                  {isLoadingConfig ? (
+                    <div className="flex items-center justify-center gap-3 px-8 py-5 bg-[#030303] rounded-xl text-lg font-black text-zinc-400">
+                      <div className="w-5 h-5 border-2 border-purple-400 border-t-transparent rounded-full animate-spin" />
+                      <span>Fetching Real APK Details...</span>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setIsTrackerOpen(true)}
+                      className="w-full flex items-center justify-center gap-3 px-8 py-5 bg-[#030303] hover:bg-transparent rounded-xl text-lg font-black text-white transition-all cursor-pointer group"
+                    >
+                      <Download size={22} className="text-purple-300 animate-bounce group-hover:scale-110 transition-transform" />
+                      <span>Download APK {apkVersion} ({apkSize})</span>
+                    </button>
+                  )}
                 </motion.div>
 
                 <div className="flex items-center justify-between text-[11px] text-zinc-500 font-medium px-1">
@@ -426,6 +428,15 @@ export default function DownloadPage() {
         </div>
 
       </main>
+
+      {/* Live Download Tracker Modal */}
+      <DownloadTracker
+        isOpen={isTrackerOpen}
+        onClose={() => setIsTrackerOpen(false)}
+        apkVersion={apkVersion || 'v1.0.0'}
+        apkSize={apkSize || '25.4 MB'}
+        downloadLink={downloadLink}
+      />
 
       <Footer />
     </div>

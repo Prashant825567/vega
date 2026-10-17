@@ -14,40 +14,40 @@ import {
 export default function Features() {
   const featuresList = [
     {
-      icon: <Film className="w-6 h-6 text-purple-400" />,
-      title: "🎬 Movies & Shows",
-      description: "Bollywood, Hollywood, South Indian cinema, and multi-language Dual Audio streams fully synced.",
-      badge: "Full HD"
-    },
-    {
-      icon: <Sparkles className="w-6 h-6 text-pink-400" />,
-      title: "🎌 Anime Hub",
-      description: "Subbed & Dubbed streams covering retro favorites and the latest trending seasonal releases.",
-      badge: "Sub & Dub"
+      icon: <Sparkles className="w-6 h-6 text-cyan-400" />,
+      title: "🤖 MAX v1 Personal AI",
+      description: "Built-in intelligent companion supporting instant answers, creative ideas, prompt-to-artwork image generation, and AI image editing.",
+      badge: "AI Powered"
     },
     {
       icon: <Tv className="w-6 h-6 text-blue-400" />,
-      title: "📺 Live OTT Mirrors",
-      description: "Live mirror feeds of global streaming networks, sports, and popular serial broadcasts for free.",
-      badge: "Zero Buffering"
+      title: "🌐 3D Globe TV Finder",
+      description: "Interactive 3D planetary Earth globe allowing you to tap any country (India, US, UK, and worldwide) to discover live TV channels.",
+      badge: "Interactive Map"
     },
     {
-      icon: <Video className="w-6 h-6 text-amber-400" />,
-      title: "🎭 Short Dramas",
-      description: "Bite-sized Korean, Chinese, and Hindi micro-series optimized for mobile-first scrolling layouts.",
+      icon: <Sliders className="w-6 h-6 text-amber-400" />,
+      title: "📺 9 OTTs in One App",
+      description: "Direct aggregated mirrors for Netflix, JioHotstar, Aha, and real-time Top 10 rankings including Bigg Boss & blockbusters.",
+      badge: "All-in-One"
+    },
+    {
+      icon: <Video className="w-6 h-6 text-rose-400" />,
+      title: "🎭 Short Dramas & Stories",
+      description: "Vertical micro-series like Ishq Ek Gunaah and bite-sized reel episodes optimized for quick mobile scrolling.",
       badge: "Trending"
     },
     {
-      icon: <Download className="w-6 h-6 text-emerald-400" />,
-      title: "⬇ Smart Downloads",
-      description: "Pause, resume, and track download speeds in real-time. Automatically saves straight to SD card storage.",
-      badge: "High Speed"
+      icon: <Film className="w-6 h-6 text-purple-400" />,
+      title: "🎬 Movies & Web Series",
+      description: "Hollywood Arts Season 1, Bollywood, South Indian cinema, and multi-source mirror feeds aggregated from 50+ servers.",
+      badge: "Full HD"
     },
     {
-      icon: <Sliders className="w-6 h-6 text-purple-400" />,
-      title: "🔍 Multi-Source Scraper",
-      description: "Our proprietary algorithm aggregates 50+ backend sources to guarantee maximum speed and 1080p mirrors.",
-      badge: "Smart Sync"
+      icon: <Download className="w-6 h-6 text-emerald-400" />,
+      title: "📡 595+ Live Channels",
+      description: "24/7 live news (4TV News, 4 SIDES TV), entertainment channels, radio stations, and worldwide webcams with zero buffer lag.",
+      badge: "595+ Streams"
     }
   ];
 
