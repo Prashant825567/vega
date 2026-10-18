@@ -18,7 +18,6 @@ import {
 import Navbar from '@/components/Navbar';
 import ParticlesBg from '@/components/ParticlesBg';
 import Footer from '@/components/Footer';
-import DownloadTracker from '@/components/DownloadTracker';
 
 export default function DownloadPage() {
   const [downloadLink, setDownloadLink] = useState('');
@@ -30,7 +29,6 @@ export default function DownloadPage() {
   const [qrUrl, setQrUrl] = useState('');
   const [copied, setCopied] = useState(false);
   const [isLoadingConfig, setIsLoadingConfig] = useState(true);
-  const [isTrackerOpen, setIsTrackerOpen] = useState(false);
 
   useEffect(() => {
     // Fetch global config from server API
@@ -199,13 +197,16 @@ export default function DownloadPage() {
                       <span>Fetching Real APK Details...</span>
                     </div>
                   ) : (
-                    <button
-                      onClick={() => setIsTrackerOpen(true)}
+                    <a
+                      href={downloadLink || '#'}
+                      download={`Vega_${apkVersion || 'v1.0.0'}.apk`}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="w-full flex items-center justify-center gap-3 px-8 py-5 bg-[#030303] hover:bg-transparent rounded-xl text-lg font-black text-white transition-all cursor-pointer group"
                     >
                       <Download size={22} className="text-purple-300 animate-bounce group-hover:scale-110 transition-transform" />
                       <span>Download APK {apkVersion} ({apkSize})</span>
-                    </button>
+                    </a>
                   )}
                 </motion.div>
 
@@ -428,15 +429,6 @@ export default function DownloadPage() {
         </div>
 
       </main>
-
-      {/* Live Download Tracker Modal */}
-      <DownloadTracker
-        isOpen={isTrackerOpen}
-        onClose={() => setIsTrackerOpen(false)}
-        apkVersion={apkVersion || 'v1.0.0'}
-        apkSize={apkSize || '25.4 MB'}
-        downloadLink={downloadLink}
-      />
 
       <Footer />
     </div>

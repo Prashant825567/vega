@@ -5,14 +5,12 @@ import Link from 'next/link';
 import { motion } from 'motion/react';
 import { ArrowDown, Play, ExternalLink } from 'lucide-react';
 import PhoneMockup from './PhoneMockup';
-import DownloadTracker from './DownloadTracker';
 
 export default function Hero() {
   const [downloadLink, setDownloadLink] = useState('');
   const [apkVersion, setApkVersion] = useState('');
   const [apkSize, setApkSize] = useState('');
   const [isLoading, setIsLoading] = useState(true);
-  const [isTrackerOpen, setIsTrackerOpen] = useState(false);
 
   useEffect(() => {
     fetch('/api/config')
@@ -109,13 +107,16 @@ export default function Hero() {
                   <span>Loading APK Size...</span>
                 </div>
               ) : (
-                <button
-                  onClick={() => setIsTrackerOpen(true)}
+                <a
+                  href={downloadLink || '#'}
+                  download={`Vega_${apkVersion || 'v1.0.0'}.apk`}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="w-full sm:w-auto flex items-center justify-center gap-2.5 px-8 py-4 bg-[#030303] hover:bg-transparent rounded-xl text-base font-bold text-white transition-all cursor-pointer group"
                 >
                   <ArrowDown size={18} className="text-purple-400 animate-bounce group-hover:scale-110 transition-transform" />
                   <span>Download APK {apkVersion} ({apkSize})</span>
-                </button>
+                </a>
               )}
             </motion.div>
 
@@ -194,15 +195,6 @@ export default function Hero() {
         </div>
 
       </div>
-
-      {/* Live Download Tracker Modal for Home Page */}
-      <DownloadTracker
-        isOpen={isTrackerOpen}
-        onClose={() => setIsTrackerOpen(false)}
-        apkVersion={apkVersion || 'v1.0.0'}
-        apkSize={apkSize || '25.4 MB'}
-        downloadLink={downloadLink}
-      />
     </section>
   );
 }
